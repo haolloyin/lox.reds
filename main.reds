@@ -20,16 +20,18 @@ rslox: context [
         chunk-ctx/init chunk
         
         constant: chunk-ctx/add-constant chunk 1.2
-        chunk-ctx/write chunk OP_CONSTANT 111
-        chunk-ctx/write chunk constant 111
+        chunk-ctx/write chunk as byte! OP_CONSTANT 111  ;- 参数：chunk / byte字节码 / 行号
+        chunk-ctx/write chunk as byte! constant 111
 
         constant: chunk-ctx/add-constant chunk 3.3
-        chunk-ctx/write chunk OP_CONSTANT 111
-        chunk-ctx/write chunk constant 111
-
-        chunk-ctx/write chunk OP_RETURN 112
+        chunk-ctx/write chunk as byte! OP_CONSTANT 111
+        chunk-ctx/write chunk as byte! constant 111
+        chunk-ctx/write chunk as byte! OP_RETURN 112
 
         disassemble-chunk chunk "test chunk"
+
+        vm-ctx/interpret chunk
+        vm-ctx/free
 
         chunk-ctx/free chunk
     ]

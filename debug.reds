@@ -7,7 +7,11 @@ disassemble-chunk: func [
         i [integer!]
         old-i [integer!]
 ][
-    print-line ["== " name " =="]
+    print-line ""
+    print-line ["---------------- " name " -------------------"]
+    print-line ["bytecode   line     name      offset   constant"]
+    print-line ["-----------------------------------------------"]
+    ;printf ["%4s"]
     i: 0
     until [
         old-i: i
@@ -22,12 +26,12 @@ disassemble-instruction: func [
     offset [integer!]
     return: [integer!]
     /local
-        instruction [integer!]
-       prev [integer!]
+        instruction [byte!]
+        prev [integer!]
 ][
     instruction: chunk/code/offset
 
-    printf ["%04d   " instruction]
+    printf ["%04d      " as integer! instruction]
 
     prev: offset - 1
     either all [offset > 0 chunk/lines/offset = chunk/lines/prev] [
@@ -67,13 +71,15 @@ constant-instruction: func [
     return: [integer!]
     /local
         index [integer!]
-        constant [integer!]
+        constant [byte!]
 ][
     index: offset + 1
     constant: chunk/code/index
-    printf ["   %-14s" name]
-    printf ["%-4d '" constant]
-    value-ctx/print chunk/constants/values/constant
+    printf ["   %-14s  " name]
+    printf ["%-4d   '" as integer! constant]
+
+    index: as integer! constant
+    value-ctx/print chunk/constants/values/index
     print-line "'"
     
     offset + 2

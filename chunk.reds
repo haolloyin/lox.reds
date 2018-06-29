@@ -8,7 +8,7 @@ Red/System []
 chunk!: alias struct! [
     count [integer!]
     capacity [integer!]
-    code [int-ptr!]             ;- 字节码数组
+    code [byte-ptr!]            ;- 字节码，总量不会超过 256 个，用 byte! 表示
     constants [value-array!]    ;- 常量数组
     lines [int-ptr!]            ;- 记录行数
 ]
@@ -27,7 +27,7 @@ chunk-ctx: context [
 
     write: func [
         chunk [chunk!] 
-        byte [integer!]
+        byte [byte!]
         line [integer!]
         /local
             old-capacity [integer!]
@@ -36,11 +36,12 @@ chunk-ctx: context [
         if chunk/capacity < (chunk/count + 1) [
             old-capacity: chunk/capacity
             chunk/capacity: GROW_CAPACITY(old-capacity)
-            chunk/code: as int-ptr! memory-ctx/grow-array
-                as byte-ptr! chunk/code
-                size? integer!
+            chunk/code: memory-ctx/grow-array
+                chunk/code
+                size? byte!
                 old-capacity
                 chunk/capacity
+
             chunk/lines: as int-ptr! memory-ctx/grow-array
                 as byte-ptr! chunk/lines
                 size? integer!
@@ -56,8 +57,8 @@ chunk-ctx: context [
 
     free: func [chunk [chunk!]][
         memory-ctx/free-array
-            as byte-ptr! chunk/code
-            size? integer!
+            chunk/code
+            size? byte!
             chunk/capacity
 
         ;- TODO 这里 free 会报错
