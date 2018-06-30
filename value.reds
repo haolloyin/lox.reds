@@ -1,6 +1,6 @@
 Red/System []
 
-#define value!      float32!
+#define value!      float!  ;- 似乎不能用 float32!
 
 value-array!: alias struct! [
     capacity [integer!]
@@ -48,7 +48,11 @@ value-ctx: context [
     ]
 
     print: func [value [value!]][
-        printf ["%g" value]
+        ;- value! 是 float! 类型才能用 %g
+        ;- 否则不知为何会报错
+        ;- https://zh.cppreference.com/w/cpp/io/c/fprintf
+        ;- https://static.red-lang.org/red-system-specs-light.html#section-4.3
+        printf ["%g" value] 
     ]
 ]
 

@@ -80,7 +80,7 @@ chunk-ctx: context [
         return: [integer!]
     ][
         value-ctx/write chunk/constants value
-        chunk/constants/count - 1
+        chunk/constants/count - 1   ;- 因为每次 write 之后 count +1，所以这里要 -1 才是下标
     ]
 ]
 

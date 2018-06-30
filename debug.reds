@@ -19,6 +19,7 @@ disassemble-chunk: func [
         ;print-line ["  ;-- chunk/count:" chunk/count ", i:" old-i " -> " i]
         i >= chunk/count
     ]
+    print-line ["-----------------------------------------------"]
 ]
 
 disassemble-instruction: func [

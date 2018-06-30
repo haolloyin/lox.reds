@@ -30,7 +30,7 @@ vm-ctx: context [
     ][
         vm/chunk: chunk
         vm/ip: vm/chunk/code
-        print-line ["ip:" vm/ip ", next:" vm/ip + 1]
+        ;print-line ["ip:" vm/ip ", next:" vm/ip + 1]
 
         run
     ]
@@ -42,7 +42,7 @@ vm-ctx: context [
     ][
         byte: vm/ip/value
         vm/ip: vm/ip + 1
-        print-line ["ip:" byte ", next:" vm/ip]
+        ;print-line ["ip:" as integer! byte ", next:" vm/ip]
         byte
     ]
 
@@ -63,12 +63,12 @@ vm-ctx: context [
     ][
         forever [
             switch instruction: read-byte [
-                ;OP_CONSTANT [
-                ;    constant: read-constant
-                ;    value-ctx/print constant
-                ;    print-line
-                ;    return INTERPRET_OK
-                ;]
+                OP_CONSTANT [
+                    constant: read-constant
+                    value-ctx/print constant
+                    print-line ""
+                    return INTERPRET_OK
+                ]
                 OP_RETURN [
                     return INTERPRET_OK
                 ]
