@@ -1,7 +1,8 @@
 Red/System []
 
 #enum OpCode! [
-    OP_CONSTANT
+    OP_CONSTANT: 5
+    OP_NEGATE
     OP_RETURN
 ]
 

@@ -26,6 +26,8 @@ rslox: context [
         constant: chunk-ctx/add-constant chunk 3.3
         chunk-ctx/write chunk as byte! OP_CONSTANT 111
         chunk-ctx/write chunk as byte! constant 111
+
+        chunk-ctx/write chunk as byte! OP_NEGATE 111
         chunk-ctx/write chunk as byte! OP_RETURN 112
 
         disassemble-chunk chunk "test chunk"

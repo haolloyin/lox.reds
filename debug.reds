@@ -8,18 +8,15 @@ disassemble-chunk: func [
         old-i [integer!]
 ][
     print-line ""
-    print-line ["---------------- " name " -------------------"]
-    print-line ["bytecode   line     name      offset   constant"]
-    print-line ["-----------------------------------------------"]
-    ;printf ["%4s"]
+    print-line ["---------------------------- " name " -------------------------------"]
+    print-line ["offset    address     bytecode    line      name      offset   constant"]
+    print-line ["-----------------------------------------------------------------------"]
     i: 0
     until [
-        old-i: i
         i: disassemble-instruction chunk i
-        ;print-line ["  ;-- chunk/count:" chunk/count ", i:" old-i " -> " i]
         i >= chunk/count
     ]
-    print-line ["-----------------------------------------------"]
+    print-line ["-----------------------------------------------------------------------" lf]
 ]
 
 disassemble-instruction: func [
@@ -29,11 +26,19 @@ disassemble-instruction: func [
     /local
         instruction [byte!]
         prev [integer!]
+        ins [byte-ptr!]
 ][
     instruction: chunk/code/offset
+    printf ["%4d      " offset]
+    printf ["%08d      " as integer! (chunk/code + offset)]     ;- 指令地址
+    printf ["%4d      " as integer! instruction]               ;- 指令的值
 
-    printf ["%04d      " as integer! instruction]
+    ;ins: chunk/code + offset
+    ;printf ["%4d      " offset]
+    ;printf ["%08d      " as integer! ins]
+    ;printf ["%04d      " as integer! ins/0] ;- 为什么不是 /value 或 /1 ??
 
+    ;- 行号
     prev: offset - 1
     either all [offset > 0 chunk/lines/offset = chunk/lines/prev] [
         printf ["%4s" "|"]      ;- 行号和上一行相同用竖线表示
@@ -44,6 +49,9 @@ disassemble-instruction: func [
     switch instruction [
         OP_CONSTANT [
             constant-instruction "OP_CONSTANT" chunk offset
+        ]
+        OP_NEGATE [
+            simple-instruction "OP_NEGATE" offset
         ]
         OP_RETURN [
             simple-instruction "OP_RETURN" offset
