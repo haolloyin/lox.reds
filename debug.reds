@@ -24,7 +24,7 @@ disassemble-instruction: func [
     offset [integer!]
     return: [integer!]
     /local
-        instruction [byte!]
+        instruction [bcode!]
         prev [integer!]
         ins [byte-ptr!]
 ][
@@ -80,7 +80,7 @@ constant-instruction: func [
     return: [integer!]
     /local
         index [integer!]
-        constant [byte!]
+        constant [bcode!]
 ][
     index: offset + 1
     constant: chunk/code/index

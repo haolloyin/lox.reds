@@ -11,7 +11,7 @@ Red/System []
 
 VM!: alias struct! [
     chunk [chunk!]
-    ip [byte-ptr!]  ;- 初始化会指向 chunk/code，字节码指针
+    ip [bcode-ptr!]  ;- 初始化会指向 chunk/code，字节码指针
     stack [pointer! [value!]]       ;- 固定个数的数组
     stack-top [pointer! [value!]]   ;- 指向栈顶
 ]
@@ -61,23 +61,26 @@ vm-ctx: context [
         vm/chunk: chunk
         vm/ip: vm/chunk/code
 
-        printf ["ip:%08d, value:%4d, next:%08d" vm/ip (as integer! vm/ip/0) (vm/ip + 1)]
-        print-line ""
-        printf ["ip:%08d, value:%4d, next:%08d" vm/ip (as integer! vm/ip/1) (vm/ip + 1)]
-        print-line ""
-        printf ["ip:%08d, value:%4d, next:%08d" vm/ip (as integer! vm/ip/value) (vm/ip + 1)]
-        print-line ""
+        ;printf ["ip:%08d, value:%d, next:%08d" vm/ip vm/ip/0 (vm/ip + 1)]
+        ;print-line ""
+        ;printf ["ip:%08d, value:%d, next:%08d" vm/ip vm/ip/1 (vm/ip + 1)]
+        ;print-line ""
+        ;printf ["ip:%08d, value:%d, next:%08d" vm/ip vm/ip/value (vm/ip + 1)]
+        ;print-line ""
 
         run
     ]
 
     read-byte: func [
-        return: [byte!]
+        return: [bcode!]
         /local
-            byte [byte!]
+            byte [bcode!]
     ][
-        byte: vm/ip/value
+        byte: vm/ip/0       ;- 为什么不能用 /value，只能用 /0 ??
+        ;byte: vm/ip/value   ;- why error??
         vm/ip: vm/ip + 1
+        ;printf ["read byte:%d, vm/ip:%d" byte vm/ip]
+        ;print-line ""
         byte
     ]
 
@@ -93,7 +96,7 @@ vm-ctx: context [
     run: func [
         return: [InterpretResult]
         /local
-            instruction [byte!]
+            instruction [bcode!]
             constant [value!]
             slot [pointer! [value!]]
     ][
@@ -108,30 +111,25 @@ vm-ctx: context [
             ;]
             ;print-line ""
 
-            ;print ">>>" disassemble-instruction vm/chunk as integer! (vm/ip - vm/chunk/code)
+            ;disassemble-instruction vm/chunk as integer! (vm/ip - vm/chunk/code)
+            disassemble-instruction vm/chunk (as integer! (vm/ip - vm/chunk/code)) / (size? bcode!)
 
             instruction: read-byte
-            print-line ["instruction: " as integer! instruction]
-            ;switch instruction: read-byte [
-            switch instruction [
+            switch as integer! instruction [    ;- 必须是 integer!
                 OP_CONSTANT [
-                    print-line "interpret OP_CONSTANT"
                     constant: read-constant
                     push constant
                     value-ctx/print constant
                     print-line ""
                 ]
                 OP_NEGATE [
-                    print-line "interpret OP_NEGATE"
                     push as value! (0 - pop)
                 ]
                 OP_RETURN [
-                    print-line "interpret OP_RETURN"
                     value-ctx/print pop
                     print-line ""
                 ]
                 default [
-                    print-line "interpret DEFAULT"
                     break
                 ]
             ]

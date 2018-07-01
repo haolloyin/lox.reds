@@ -6,10 +6,14 @@ Red/System []
     OP_RETURN
 ]
 
+#define bcode!      integer!
+;#define bcode!     byte! 
+#define bcode-ptr!  [pointer! [bcode!]]
+
 chunk!: alias struct! [
     count [integer!]
     capacity [integer!]
-    code [byte-ptr!]            ;- 字节码，总量不会超过 256 个，用 byte! 表示
+    code [bcode-ptr!]            ;- 字节码，总量不会超过 256 个，用 byte! 表示
     constants [value-array!]    ;- 常量数组
     lines [int-ptr!]            ;- 记录行数
 ]
@@ -28,7 +32,7 @@ chunk-ctx: context [
 
     write: func [
         chunk [chunk!] 
-        byte [byte!]
+        byte [bcode!]
         line [integer!]
         /local
             old-capacity [integer!]
@@ -37,9 +41,9 @@ chunk-ctx: context [
         if chunk/capacity < (chunk/count + 1) [
             old-capacity: chunk/capacity
             chunk/capacity: GROW_CAPACITY(old-capacity)
-            chunk/code: memory-ctx/grow-array
-                chunk/code
-                size? byte!
+            chunk/code: as bcode-ptr! memory-ctx/grow-array
+                as byte-ptr! chunk/code
+                size? bcode!
                 old-capacity
                 chunk/capacity
 
@@ -58,8 +62,8 @@ chunk-ctx: context [
 
     free: func [chunk [chunk!]][
         memory-ctx/free-array
-            chunk/code
-            size? byte!
+            as byte-ptr! chunk/code
+            size? bcode! 
             chunk/capacity
 
         ;- TODO 这里 free 会报错
