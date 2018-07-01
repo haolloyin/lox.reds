@@ -57,7 +57,10 @@ disassemble-instruction: func [
             simple-instruction "OP_RETURN" offset
         ]
         default [
-            print ["Unknown opcode " instruction lf]
+            ;printf ["   %-14s" "Unknown"  instruction lf]
+            printf ["   %-14s  " "Unknown"]
+            printf ["%-4d" as integer! instruction]
+            print lf
             offset + 1
         ]
     ]

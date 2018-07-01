@@ -101,15 +101,15 @@ vm-ctx: context [
             slot [pointer! [value!]]
     ][
         forever [
-            ;print ["stack: "]
-            ;slot: vm/stack
-            ;while [slot < vm/stack-top][
-            ;    printf ["[ "]
-            ;    value-ctx/print slot/value
-            ;    printf [" ]"]
-            ;    slot: slot + 1
-            ;]
-            ;print-line ""
+            print ["stack: "]
+            slot: vm/stack
+            while [slot < vm/stack-top][
+                printf ["[ "]
+                value-ctx/print slot/value
+                printf [" ]"]
+                slot: slot + 1
+            ]
+            print-line ""
 
             ;disassemble-instruction vm/chunk as integer! (vm/ip - vm/chunk/code)
             disassemble-instruction vm/chunk (as integer! (vm/ip - vm/chunk/code)) / (size? bcode!)
@@ -123,7 +123,7 @@ vm-ctx: context [
                     print-line ""
                 ]
                 OP_NEGATE [
-                    push as value! (0 - pop)
+                    push as value! (0.0 - pop)
                 ]
                 OP_RETURN [
                     value-ctx/print pop
