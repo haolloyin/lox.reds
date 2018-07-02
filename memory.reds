@@ -71,7 +71,7 @@ memory-ctx: context [
         size [integer!]
         old-count [integer!]
     ][
-        ;print-line ["  ;-- free:" pointer]
+        print-line ["  ;-- free:" pointer]
         reallocate pointer size * old-count 0
     ]
 ]

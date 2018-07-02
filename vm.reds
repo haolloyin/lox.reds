@@ -6,6 +6,12 @@ Red/System []
     INTERPRET_RUNTIME_ERROR
 ]
 
+#define BINARY_OP(op) [
+    b: pop
+    a: pop
+    push (a op b)
+]
+
 #define STACK_MAX 256
 
 
@@ -61,13 +67,6 @@ vm-ctx: context [
         vm/chunk: chunk
         vm/ip: vm/chunk/code
 
-        ;printf ["ip:%08d, value:%d, next:%08d" vm/ip vm/ip/0 (vm/ip + 1)]
-        ;print-line ""
-        ;printf ["ip:%08d, value:%d, next:%08d" vm/ip vm/ip/1 (vm/ip + 1)]
-        ;print-line ""
-        ;printf ["ip:%08d, value:%d, next:%08d" vm/ip vm/ip/value (vm/ip + 1)]
-        ;print-line ""
-
         run
     ]
 
@@ -76,11 +75,8 @@ vm-ctx: context [
         /local
             byte [bcode!]
     ][
-        byte: vm/ip/0       ;- 为什么不能用 /value，只能用 /0 ??
-        ;byte: vm/ip/value   ;- why error??
-        vm/ip: vm/ip + 1
-        ;printf ["read byte:%d, vm/ip:%d" byte vm/ip]
-        ;print-line ""
+        byte: vm/ip/value
+        vm/ip: vm/ip + 1    ;- 指向下一个元素
         byte
     ]
 
@@ -89,7 +85,7 @@ vm-ctx: context [
         /local
             index [integer!]
     ][
-        index: as integer! read-byte
+        index: as integer! read-byte + 1
         vm/chunk/constants/values/index
     ]
 
@@ -99,28 +95,42 @@ vm-ctx: context [
             instruction [bcode!]
             constant [value!]
             slot [pointer! [value!]]
+            a [value!]
+            b [value!]
     ][
         forever [
             print ["stack: "]
             slot: vm/stack
             while [slot < vm/stack-top][
-                printf ["[ "]
+                printf ["["]
                 value-ctx/print slot/value
-                printf [" ]"]
+                printf ["] "]
                 slot: slot + 1
             ]
             print-line ""
 
             ;disassemble-instruction vm/chunk as integer! (vm/ip - vm/chunk/code)
-            disassemble-instruction vm/chunk (as integer! (vm/ip - vm/chunk/code)) / (size? bcode!)
+            ;disassemble-instruction vm/chunk (as integer! (vm/ip - vm/chunk/code)) / (size? bcode!)    ;- 除以元素大小
 
             instruction: read-byte
             switch as integer! instruction [    ;- 必须是 integer!
                 OP_CONSTANT [
                     constant: read-constant
                     push constant
-                    value-ctx/print constant
-                    print-line ""
+                    ;value-ctx/print constant
+                    ;print-line ""
+                ]
+                OP_ADD [
+                    BINARY_OP(+)
+                ]
+                OP_SUBTRACT [
+                    BINARY_OP(-)
+                ]
+                OP_MULTIPLY [
+                    BINARY_OP(*)
+                ]
+                OP_DIVEDE [
+                    BINARY_OP(/)
                 ]
                 OP_NEGATE [
                     push as value! (0.0 - pop)

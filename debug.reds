@@ -24,31 +24,37 @@ disassemble-instruction: func [
     offset [integer!]
     return: [integer!]
     /local
-        instruction [bcode!]
-        prev [integer!]
-        ins [byte-ptr!]
+        instruction [bcode-ptr!]
+        index [integer!]
 ][
-    instruction: chunk/code/offset
+    instruction: chunk/code + offset
     printf ["%4d      " offset]
-    printf ["%08d      " as integer! (chunk/code + offset)]     ;- 指令地址
-    printf ["%4d      " as integer! instruction]               ;- 指令的值
-
-    ;ins: chunk/code + offset
-    ;printf ["%4d      " offset]
-    ;printf ["%08d      " as integer! ins]
-    ;printf ["%04d      " as integer! ins/0] ;- 为什么不是 /value 或 /1 ??
+    printf ["%08d      " as integer! instruction]       ;- 指令地址
+    printf ["%4d      " as integer! instruction/value]  ;- 指令的值
 
     ;- 行号
-    prev: offset - 1
-    either all [offset > 0 chunk/lines/offset = chunk/lines/prev] [
+    index: offset + 1
+    either all [index > 0 chunk/lines/index = chunk/lines/offset] [
         printf ["%4s" "|"]      ;- 行号和上一行相同用竖线表示
     ][
-        printf ["%4d" chunk/lines/offset]
+        printf ["%4d" chunk/lines/index]
     ]
 
-    switch instruction [
+    switch instruction/value [
         OP_CONSTANT [
             constant-instruction "OP_CONSTANT" chunk offset
+        ]
+        OP_ADD [
+            simple-instruction "OP_ADD" offset
+        ]
+        OP_SUBTRACT [
+            simple-instruction "OP_SUBTRACT" offset
+        ]
+        OP_MULTIPLY [
+            simple-instruction "OP_MULTIPLY" offset
+        ]
+        OP_DIVEDE [
+            simple-instruction "OP_DIVEDE" offset
         ]
         OP_NEGATE [
             simple-instruction "OP_NEGATE" offset
@@ -85,12 +91,13 @@ constant-instruction: func [
         index [integer!]
         constant [bcode!]
 ][
-    index: offset + 1
-    constant: chunk/code/index
+    index: offset + 2   ;- 常量的下标紧跟在 op code 之后
+    ;constant: as integer! chunk/code/index
+    constant: as bcode! chunk/code/index
     printf ["   %-14s  " name]
-    printf ["%-4d   '" as integer! constant]
+    printf ["%-4d   '" constant]
 
-    index: as integer! constant
+    index: (as integer! constant) + 1
     value-ctx/print chunk/constants/values/index
     print-line "'"
     

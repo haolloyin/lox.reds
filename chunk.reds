@@ -2,6 +2,10 @@ Red/System []
 
 #enum OpCode! [
     OP_CONSTANT: 5
+    OP_ADD
+    OP_SUBTRACT
+    OP_MULTIPLY
+    OP_DIVEDE
     OP_NEGATE
     OP_RETURN
 ]
@@ -13,7 +17,7 @@ Red/System []
 chunk!: alias struct! [
     count [integer!]
     capacity [integer!]
-    code [bcode-ptr!]            ;- 字节码，总量不会超过 256 个，用 byte! 表示
+    code [bcode-ptr!]           ;- 字节码，总量不会超过 256 个，用 byte! 表示
     constants [value-array!]    ;- 常量数组
     lines [int-ptr!]            ;- 记录行数
 ]
@@ -24,7 +28,7 @@ chunk-ctx: context [
         chunk/count: 0
         chunk/capacity: 0
         chunk/code: null
-        chunk/constants: declare value-array!   ;- 先声明
+        chunk/constants: declare value-array!   ;- 结构体要先声明
         chunk/lines: null
 
         value-ctx/init chunk/constants
@@ -54,10 +58,10 @@ chunk-ctx: context [
                 chunk/capacity
         ]
 
-        index: chunk/count
+        chunk/count: chunk/count + 1    ;- 消耗空间 +1
+        index: chunk/count              ;- R/S 的指针是基于 /1 来指向的
         chunk/code/index: byte          ;- 写入字节码 byte
         chunk/lines/index: line
-        chunk/count: chunk/count + 1    ;- 消耗空间 +1
     ]
 
     free: func [chunk [chunk!]][
@@ -66,10 +70,7 @@ chunk-ctx: context [
             size? bcode! 
             chunk/capacity
 
-        ;- TODO 这里 free 会报错
-        ;print-line ["  ;-- before free constants:" chunk/constants]
-        ;value-ctx/free chunk/constants
-        ;print-line ["  ;-- after free constants:" chunk/constants]
+        value-ctx/free chunk/constants
 
         memory-ctx/free-array
             as byte-ptr! chunk/lines
@@ -86,6 +87,7 @@ chunk-ctx: context [
     ][
         value-ctx/write chunk/constants value
         chunk/constants/count - 1   ;- 因为每次 write 之后 count +1，所以这里要 -1 才是下标
+        ;chunk/constants/count       ;- 因为每次 write 之后 count +1，但因为 RS 的指针是基于 1 的，所以干脆不需要 -1 更方便
     ]
 ]
 

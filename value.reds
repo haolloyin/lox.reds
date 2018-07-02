@@ -1,6 +1,6 @@
 Red/System []
 
-#define value!      float!  ;- 似乎不能用 float32!
+#define value!      float!  ;- 用 float32! 在 macOS 下会报错
 
 value-array!: alias struct! [
     capacity [integer!]
@@ -33,9 +33,9 @@ value-ctx: context [
                 array/capacity
         ]
 
+        array/count: array/count + 1
         index: array/count
         array/values/index: value
-        array/count: array/count + 1
     ]
 
     free: func [array [value-array!]][
