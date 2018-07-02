@@ -85,7 +85,7 @@ vm-ctx: context [
         /local
             index [integer!]
     ][
-        index: as integer! read-byte + 1
+        index: as integer! read-byte
         vm/chunk/constants/values/index
     ]
 
@@ -115,7 +115,7 @@ vm-ctx: context [
             instruction: read-byte
             switch as integer! instruction [    ;- 必须是 integer!
                 OP_CONSTANT [
-                    constant: read-constant
+                    constant: read-constant     ;- 常量下标需要再读取一位
                     push constant
                     ;value-ctx/print constant
                     ;print-line ""

@@ -92,12 +92,11 @@ constant-instruction: func [
         constant [bcode!]
 ][
     index: offset + 2   ;- 常量的下标紧跟在 op code 之后
-    ;constant: as integer! chunk/code/index
     constant: as bcode! chunk/code/index
     printf ["   %-14s  " name]
     printf ["%-4d   '" constant]
 
-    index: (as integer! constant) + 1
+    index: as integer! constant
     value-ctx/print chunk/constants/values/index
     print-line "'"
     

@@ -1,7 +1,7 @@
 Red/System []
 
 #enum OpCode! [
-    OP_CONSTANT: 5
+    OP_CONSTANT: 1
     OP_ADD
     OP_SUBTRACT
     OP_MULTIPLY
@@ -86,8 +86,7 @@ chunk-ctx: context [
         return: [integer!]
     ][
         value-ctx/write chunk/constants value
-        chunk/constants/count - 1   ;- 因为每次 write 之后 count +1，所以这里要 -1 才是下标
-        ;chunk/constants/count       ;- 因为每次 write 之后 count +1，但因为 RS 的指针是基于 1 的，所以干脆不需要 -1 更方便
+        chunk/constants/count   ;- 因为每次 write 之后 count +1，而且 R/S 的指针是基于 1 的，所以干脆不需要 -1 更方便
     ]
 ]
 
