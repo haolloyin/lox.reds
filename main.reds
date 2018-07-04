@@ -8,15 +8,14 @@ Red/System []
 #include %debug.reds
 
 rslox: context [
-    
-    vm-ctx/init
-
-    chunk: declare chunk!
-
-    main: func [
+    test: func [
         /local
+            chunk [chunk!]
             constant [integer!]
     ][
+        vm-ctx/init
+
+        chunk: declare chunk!
         chunk-ctx/init chunk
         
         constant: chunk-ctx/add-constant chunk 1.2          ;- 返回的是常量在 constants 的下标，基于 0
@@ -57,9 +56,63 @@ rslox: context [
 
         chunk-ctx/free chunk
     ]
+
+    repl: func [
+        /local
+            line [c-string!]
+            bytes [byte-ptr!]
+    ][
+        bytes: as byte-ptr! system/stack/allocate 1024 / 4
+        line: declare c-string!
+
+        forever [
+            print "> "
+            ;if null? fgets bytes 1024 as byte-ptr! stdin [
+            ;if null? fgets bytes 1024 stdin [
+            if null? gets bytes [
+                print "fgets error"
+                print lf
+                break
+            ]
+            line: as c-string! bytes
+            print [line lf]
+
+            ;interpret line
+        ]
+    ]
+
+    run-file: func [
+        path [c-string!]
+    ][
+        print ["file: " path lf]
+    ]
+
+    main: func [
+        /local
+            args [str-array!]
+    ][
+        vm-ctx/init
+        
+        args: declare str-array!
+        args: system/args-list
+        
+        switch system/args-count [
+            1 [
+                repl
+            ]
+            2 [
+                args: system/args-list + 1
+                run-file args/item
+            ]
+            default [
+                print ["Usage: clox [path]" lf]
+            ]
+        ]
+
+        vm-ctx/free
+    ]
 ]
 
+;rslox/test     ;- see output.txt
 rslox/main
-
-;- see output.txt
 

@@ -24,9 +24,6 @@ memory-ctx: context [
     ;-- C standard memory functions
     #import [
         LIBC-file cdecl [
-            free:       "free" [
-                block		[byte-ptr!]
-            ]
             realloc:    "realloc" [
                 ptr         [byte-ptr!]
                 size        [integer!]
