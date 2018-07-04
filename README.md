@@ -1,3 +1,9 @@
+
+## How to compile?
+
+Use `red -c main.reds` to compile and run it `./main` will output:
+
+```shell
   ;-- grow-array:00000000, size:4, old:0, count:1024, at:00543250
   ;-- grow-array:00000000, size:4, old:0, count:8, at:005419D8
   ;-- grow-array:00000000, size:4, old:0, count:8, at:00541A00
@@ -37,3 +43,5 @@ stack:
   ;-- free:00541A50
   ;-- free:005419D8
   ;-- free:00541A98
+```
+
