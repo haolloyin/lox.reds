@@ -1,16 +1,10 @@
 Red/System []
 
-FILE!: alias struct! [
-    unused [integer!]
-]
-
 #import [
     LIBC-file cdecl [
         fgets: "fgets" [
             str [byte-ptr!]
             count [integer!]
-            ;stream [FILE!]
-            ;stream [integer!]
             stream [byte-ptr!]
             return: [byte-ptr!]
         ]
@@ -21,21 +15,32 @@ FILE!: alias struct! [
     ]
 ]
 
+#either OS = 'Windows [
+    #import [
+        LIBC-file cdecl [
+            fdopen: "_fdopen" [
+                fd [integer!]
+                mode [byte-ptr!]
+                return: [byte-ptr!]
+            ]
+        ]
+    ]
+][
+    #import [
+        LIBC-file cdecl [
+            fdopen: "fdopen" [
+                fd [integer!]
+                mode [byte-ptr!]
+                return: [byte-ptr!]
+            ]
+        ]
+    ]
+]
 
-;#switch OS [
-;    'Windows [
-;        #import [
-;            "kernel32.dll" stdcall [
-;                GetStdHandle: "GetStdHandle" [
-;                    type		[integer!]
-;                    return:		[integer!]
-;                ]
-;            ]
-;        ]
-;
-;        stdin:  GetStdHandle WIN_STD_INPUT_HANDLE
-;        stdout: GetStdHandle WIN_STD_OUTPUT_HANDLE
-;        stderr: GetStdHandle WIN_STD_ERROR_HANDLE 
-;    ]
-;]
+new-stdin: fdopen 0 as byte-ptr! "r"
+print-line ["stdin: " stdin]
+print-line ["stdout: " stdout]
+print-line ["stderr: " stderr]
+print-line ["new-stdin: " new-stdin]
+
 

@@ -61,6 +61,7 @@ rslox: context [
         /local
             line [c-string!]
             bytes [byte-ptr!]
+            count [integer!]
     ][
         bytes: as byte-ptr! system/stack/allocate 1024 / 4
         line: declare c-string!
@@ -69,13 +70,17 @@ rslox: context [
             print "> "
             ;if null? fgets bytes 1024 as byte-ptr! stdin [
             ;if null? fgets bytes 1024 stdin [
-            if null? gets bytes [
+            ;if null? fgets bytes 1024 as int-ptr! stdin [
+            ;if null? gets bytes [
+            ;count: scanf ["%s" bytes]
+            ;if negative? count [
+            if null? fgets bytes 1024 new-stdin [
                 print "fgets error"
                 print lf
                 break
             ]
             line: as c-string! bytes
-            print [line lf]
+            print line
 
             ;interpret line
         ]
@@ -97,16 +102,12 @@ rslox: context [
         args: system/args-list
         
         switch system/args-count [
-            1 [
-                repl
-            ]
+            1 [repl]
             2 [
                 args: system/args-list + 1
                 run-file args/item
             ]
-            default [
-                print ["Usage: clox [path]" lf]
-            ]
+            default [print ["Usage: clox [path]" lf]]
         ]
 
         vm-ctx/free
