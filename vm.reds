@@ -1,6 +1,6 @@
 Red/System []
 
-#enum InterpretResult [
+#enum InterpretResult! [
     INTERPRET_OK
     INTERPRET_COMPILE_ERROR
     INTERPRET_RUNTIME_ERROR
@@ -62,7 +62,7 @@ vm-ctx: context [
 
     interpret: func [
         chunk [chunk!]
-        return: [InterpretResult]
+        return: [InterpretResult!]
     ][
         vm/chunk: chunk
         vm/ip: vm/chunk/code
@@ -90,7 +90,7 @@ vm-ctx: context [
     ]
 
     run: func [
-        return: [InterpretResult]
+        return: [InterpretResult!]
         /local
             instruction [bcode!]
             constant [value!]

@@ -68,12 +68,6 @@ rslox: context [
 
         forever [
             print "> "
-            ;if null? fgets bytes 1024 as byte-ptr! stdin [
-            ;if null? fgets bytes 1024 stdin [
-            ;if null? fgets bytes 1024 as int-ptr! stdin [
-            ;if null? gets bytes [
-            ;count: scanf ["%s" bytes]
-            ;if negative? count [
             if null? fgets bytes 1024 new-stdin [
                 print "fgets error"
                 print lf
@@ -86,10 +80,72 @@ rslox: context [
         ]
     ]
 
+    interpret: func [
+        source [byte-ptr!]
+        return: [InterpretResult!]
+    ][
+        return null
+    ]
+
+    read-file: func [
+        path [c-string!]
+        return: [byte-ptr!]
+        /local
+            file [byte-ptr!]
+            fsize [integer!]
+            buffer [byte-ptr!]
+            bytes-read [integer!]
+    ][
+        file: fopen path as byte-ptr! "rb"
+        if null? file [
+            print-line ["Could not open file '" path "'."]
+            quit 74
+        ]
+
+        fseek file 0 SEEK_END
+        fsize: ftell file
+        rewind file
+
+        print-line ["file size: " fsize]
+
+        buffer: allocate fsize + 1
+        if null? buffer [
+            print-line ["Not enough memory to read '" path "'."]
+            quit 74
+        ]
+
+        bytes-read: fread buffer size? byte! fsize file
+        print-line ["bytes-read: " bytes-read]
+        if bytes-read < fsize [
+            print-line ["Could not read file'" path "'."]
+            quit 74
+        ]
+
+        fclose file
+
+        print-line ["buffer: " as-c-string buffer]
+
+        return buffer
+    ]
+
     run-file: func [
         path [c-string!]
+        /local
+            result [InterpretResult!]
+            source [byte-ptr!]
     ][
         print ["file: " path lf]
+
+        source: read-file path
+        result: interpret source
+
+        free source
+
+        switch result [
+            INTERPRET_COMPILE_ERROR [exit 65]
+            INTERPRET_RUNTIME_ERROR [exit 70]
+            default [exit 0]
+        ]
     ]
 
     main: func [
@@ -107,7 +163,7 @@ rslox: context [
                 args: system/args-list + 1
                 run-file args/item
             ]
-            default [print ["Usage: clox [path]" lf]]
+            default [print-line [lf "Usage: clox [path]"]]
         ]
 
         vm-ctx/free
