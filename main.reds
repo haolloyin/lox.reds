@@ -6,6 +6,7 @@ Red/System []
 #include %chunk.reds
 #include %vm.reds
 #include %debug.reds
+#include %compiler.reds
 
 rslox: context [
     test: func [
@@ -80,16 +81,9 @@ rslox: context [
         ]
     ]
 
-    interpret: func [
-        source [byte-ptr!]
-        return: [InterpretResult!]
-    ][
-        return null
-    ]
-
     read-file: func [
         path [c-string!]
-        return: [byte-ptr!]
+        return: [c-string!]
         /local
             file [byte-ptr!]
             fsize [integer!]
@@ -102,9 +96,10 @@ rslox: context [
             quit 74
         ]
 
-        fseek file 0 SEEK_END
-        fsize: ftell file
-        rewind file
+        ;- 由于未知文件的大小，先读出 fsize 之后再分配内存
+        fseek file 0 SEEK_END   ;- 移到文件尾
+        fsize: ftell file       ;- 查看大小
+        rewind file             ;- 回到文件头
 
         print-line ["file size: " fsize]
 
@@ -123,9 +118,19 @@ rslox: context [
 
         fclose file
 
-        print-line ["buffer: " as-c-string buffer]
+        print-line "-------- file content --------"
+        print as-c-string buffer
+        print-line "------------------------------"
 
-        return buffer
+        return as-c-string buffer
+    ]
+
+    interpret: func [
+        source [c-string!]
+        return: [InterpretResult!]
+    ][
+        compiler/compile source
+        return INTERPRET_OK
     ]
 
     run-file: func [

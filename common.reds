@@ -8,10 +8,6 @@ Red/System []
             stream [byte-ptr!]
             return: [byte-ptr!]
         ]
-        gets: "gets" [
-            str [byte-ptr!]
-            return: [byte-ptr!]
-        ]
         fopen: "fopen" [
             path [c-string!]
             mode [byte-ptr!]
