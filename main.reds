@@ -137,14 +137,14 @@ rslox: context [
         path [c-string!]
         /local
             result [InterpretResult!]
-            source [byte-ptr!]
+            source [c-string!]
     ][
         print ["file: " path lf]
 
         source: read-file path
         result: interpret source
 
-        free source
+        free as byte-ptr! source
 
         switch result [
             INTERPRET_COMPILE_ERROR [exit 65]
