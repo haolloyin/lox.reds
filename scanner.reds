@@ -81,19 +81,14 @@ scanner-ctx: context [
 
         scanner/start: scanner/current
 
-        if at-end? [return make-token TOKEN_EOF]
-
         c: advance
-        print-line ["c: " c]
-
+        if at-end? [return make-token TOKEN_EOF]
         if alpha? c [return make-identifier]
         if digit? c [return make-number]
 
-        switch advance [
-            #"(" [return make-token TOKEN_LEFT_PAREN]
-            #")" [return make-token TOKEN_RIGHT_PAREN]
-            #"{" [return make-token TOKEN_LEFT_BRACE]
-            #"}" [return make-token TOKEN_RIGHT_BRACE]
+        ;print-line ["c: {" c "}"]
+
+        switch c [
             #";" [return make-token TOKEN_SEMICOLON]
             #"," [return make-token TOKEN_COMMA]
             #"." [return make-token TOKEN_DOT]
@@ -101,13 +96,17 @@ scanner-ctx: context [
             #"+" [return make-token TOKEN_PLUS]
             #"/" [return make-token TOKEN_SLASH]
             #"*" [return make-token TOKEN_STAR]
+            #"(" [return make-token TOKEN_LEFT_PAREN]
+            #")" [return make-token TOKEN_RIGHT_PAREN]
+            #"^{" [return make-token TOKEN_LEFT_BRACE]
+            #"^}" [return make-token TOKEN_RIGHT_BRACE]
             #"!" [return make-token either match? #"=" [TOKEN_BANG_EQUAL][TOKEN_BANG]]
             #"=" [return make-token either match? #"=" [TOKEN_EQUAL_EQUAL][TOKEN_EQUAL]]
             #"<" [return make-token either match? #"=" [TOKEN_LESS_EQUAL][TOKEN_LESS]]
             #">" [return make-token either match? #"=" [TOKEN_GREATER_EQUAL][TOKEN_GREATER]]
-            ;#"\"" [return make-string]
+            #"^\" [return make-string]
             default [
-                print-line ["default: " c]
+                ;print-line ["default: " c]
                 return error-token "Unexpected character."
             ]
         ]
@@ -118,13 +117,16 @@ scanner-ctx: context [
     skip-whitespace: func [/local c [byte!]][
         forever [
             c: peek
-            print-line ["skip c: " c]
+            ;- See http://www.rebol.com/docs/core23/rebolcore-16.html#section-3.1
             switch c [
-                #" " #"^M" #"^-" [
+                #" "
+                #"^M"
+                #"^(tab)" [
                     advance
+                    ;print-line ["skip whitespace"]
                     break
                 ]
-                #"^/" [
+                #"^(line)"[
                     scanner/line: scanner/line + 1
                     advance
                     break
@@ -137,7 +139,7 @@ scanner-ctx: context [
                     ]
                 ]
                 default [
-                    print-line ["skip default: " c]
+                    ;print-line ["do not skip: " c]
                     break
                 ]
             ]
@@ -148,9 +150,11 @@ scanner-ctx: context [
         return: [byte!]
         /local
             idx [integer!]
+            c [byte!]
     ][
+        c: scanner/current/value
         scanner/current: scanner/current + 1
-        scanner/current/value
+        c
     ]
 
     digit?: func [c [byte!] return: [logic!]][
@@ -184,9 +188,10 @@ scanner-ctx: context [
         scanner/current/value
     ]
 
-    peek-next: func [return: [byte!]][
+    peek-next: func [return: [byte!] /local p [byte-ptr!]][
         if at-end? [return null-byte]
-        scanner/current/value
+        p: scanner/current + 1
+        p/value
     ]
 
     make-number: func [return: [token!]][
@@ -202,29 +207,79 @@ scanner-ctx: context [
 
     make-identifier: func [return: [token!]][
         while [any [alpha? peek digit? peek]][advance]
-        make-token identifier-type
+        make-token get-identifier-type
     ]
 
-    identifier-type: func [return: [token-type!]][
-        TOKEN_IDENTIFIER
+    get-identifier-type: func [
+        return: [token-type!]
+        /local c [byte-ptr!]
+    ][
+        switch scanner/start/value [
+            #"a" [return check-keyword 1 2 "nd" TOKEN_AND]
+            #"c" [return check-keyword 1 4 "lass" TOKEN_CLASS]
+            #"e" [return check-keyword 1 3 "lse" TOKEN_ELSE]
+            #"f" [
+                if (as-integer scanner/current - scanner/start) > 1 [
+                    c: scanner/start + 1
+                    switch c/value [
+                        #"a" [return check-keyword 2 3 "lse" TOKEN_FALSE]
+                        #"o" [return check-keyword 2 1 "r" TOKEN_FOR]
+                        #"u" [return check-keyword 2 1 "n" TOKEN_FUN]
+                    ]
+                ]
+                return TOKEN_IDENTIFIER
+            ]
+            #"i" [return check-keyword 1 1 "f" TOKEN_IF]
+            #"n" [return check-keyword 1 2 "il" TOKEN_NIL]
+            #"o" [return check-keyword 1 1 "r" TOKEN_OR]
+            #"p" [return check-keyword 1 4 "rint" TOKEN_PRINT]
+            #"r" [return check-keyword 1 5 "eturn" TOKEN_RETURN]
+            #"s" [return check-keyword 1 4 "uper" TOKEN_SUPER]
+            #"v" [return check-keyword 1 2 "ar" TOKEN_VAR]
+            #"w" [return check-keyword 1 4 "hile" TOKEN_WHILE]
+            default [TOKEN_IDENTIFIER]
+        ]
     ]
 
-    ;make-string: func [
-    ;    return: [token!]
-    ;][
-    ;    while all [peek != "\"" not at-end?][
-    ;        if peek = cr [
-    ;            scanner/line: scanner/line + 1
-    ;        ]
-    ;        advance
-    ;    ]
+    check-keyword: func [
+        start [integer!]
+        length [integer!]
+        rest [c-string!]
+        type [token-type!]
+        return: [token-type!]
+        /local
+            c [byte-ptr!]
+            c2 [byte-ptr!]
+            i [integer!]
+    ][
+        i: 0
+        until [
+            c: as byte-ptr! rest + i
+            c2: scanner/start + start + i
 
-    ;    if at-end? [return error-token "Unexpected character."]
+            if c/value <> c2/value [return TOKEN_IDENTIFIER]
+            i: i + 1
+            i < length
+        ]
+        return type
+    ]
 
-    ;    advance
+    make-string: func [
+        return: [token!]
+    ][
+        while [all [peek <> #"^"" not at-end?]][
+            if peek = cr [
+                scanner/line: scanner/line + 1
+            ]
+            advance
+        ]
 
-    ;    return make-token TOKEN_STRING
-    ;]
+        if at-end? [return error-token "Unexpected character."]
+
+        advance
+
+        return make-token TOKEN_STRING
+    ]
 
     make-token: func [
         type [token-type!]

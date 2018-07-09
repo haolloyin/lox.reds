@@ -1,7 +1,12 @@
 
-## How to compile?
+## How to compile
 
 Use `red -c main.reds` to compile and run it `./main` will output:
+
+
+## Compile to byte code
+
+Output:
 
 ```shell
   ;-- grow-array:00000000, size:4, old:0, count:1024, at:00543250
@@ -43,5 +48,32 @@ stack:
   ;-- free:00541A50
   ;-- free:005419D8
   ;-- free:00541A98
+```
+
+
+## Scan source code
+
+Output:
+
+```shell
+stdin: 0
+stdout: 1
+stderr: 2
+new-stdin: A6F42400
+  ;-- grow-array:00000000, size:8, old:0, count:2048, at:00804600
+file: sample.txt
+file size: 14
+bytes-read: 14
+-------- file content --------
+print 1 + 2;
+
+------------------------------
+   1   31   {print}
+   |   21   {1}
+   |    7   {+}
+   |   21   {2}
+   |    8   {;}
+   2   39   {
+}
 ```
 

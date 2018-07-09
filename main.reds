@@ -115,12 +115,12 @@ rslox: context [
             print-line ["Could not read file'" path "'."]
             quit 74
         ]
-
         fclose file
 
-        print-line "-------- file content --------"
-        print as-c-string buffer
-        print-line "------------------------------"
+        #if OS = 'Windows [
+            ;- See https://zh.cppreference.com/w/c/io/fprintf
+            sprintf [buffer "%.*s" fsize buffer]    ;- Windows 下文件末尾会变多，重新截取一下
+        ]
 
         return as-c-string buffer
     ]
@@ -142,6 +142,11 @@ rslox: context [
         print ["file: " path lf]
 
         source: read-file path
+
+        print-line "-------- file content --------"
+        print source
+        print-line "------------------------------"
+
         result: interpret source
 
         free as byte-ptr! source
