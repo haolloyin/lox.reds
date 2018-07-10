@@ -37,6 +37,10 @@ Red/System []
             stream      [byte-ptr!]
             return:     [integer!]
         ]
+		fprintf: "fprintf" [
+            [variadic] 
+            return: [integer!]
+        ]
     ]
 ]
 
@@ -71,4 +75,8 @@ print-line ["new-stdin: " new-stdin]
 #define SEEK_SET    0   ;/* set file offset to offset */
 #define SEEK_CUR    1   ;/* set file offset to current plus offset */
 #define SEEK_END    2   ;/* set file offset to EOF plus offset */
+
+MAX_INT: (1 << (8 * (size? integer!) - 1)) - 1
+print-line ["MAX_INT: " MAX_INT]
+print-line ["--------------------"]
 
