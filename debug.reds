@@ -24,13 +24,13 @@ disassemble-instruction: func [
     offset [integer!]
     return: [integer!]
     /local
-        instruction [bcode-ptr!]
+        instruction [int-ptr!]
         index [integer!]
 ][
     instruction: chunk/code + offset
     printf ["%4d      " offset]
     printf ["%08d      " as integer! instruction]       ;- 指令地址
-    printf ["%4d      " as integer! instruction/value]  ;- 指令的值
+    printf ["%4d      " instruction/value]  ;- 指令的值
 
     ;- 行号
     index: offset + 1
@@ -65,7 +65,7 @@ disassemble-instruction: func [
         default [
             ;printf ["   %-14s" "Unknown"  instruction lf]
             printf ["   %-14s  " "Unknown"]
-            printf ["%-4d" as integer! instruction]
+            printf ["%-4d" instruction]
             print lf
             offset + 1
         ]
@@ -89,14 +89,14 @@ constant-instruction: func [
     return: [integer!]
     /local
         index [integer!]
-        constant [bcode!]
+        constant [integer!]
 ][
     index: offset + 2   ;- 常量的下标紧跟在 op code 之后
-    constant: as bcode! chunk/code/index
+    constant: chunk/code/index
     printf ["   %-14s  " name]
     printf ["%-4d   '" constant]
 
-    index: as integer! constant
+    index: constant
     value-ctx/print chunk/constants/values/index
     print-line "'"
     

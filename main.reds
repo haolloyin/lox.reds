@@ -20,35 +20,35 @@ rslox: context [
         chunk-ctx/init chunk
         
         constant: chunk-ctx/add-constant chunk 1.2          ;- 返回的是常量在 constants 的下标，基于 0
-        chunk-ctx/write chunk as bcode! OP_CONSTANT 123     ;- 参数：chunk / byte字节码 / 行号
-        chunk-ctx/write chunk as bcode! constant 123
+        chunk-ctx/write chunk OP_CONSTANT 123     ;- 参数：chunk / byte字节码 / 行号
+        chunk-ctx/write chunk constant 123
 
         constant: chunk-ctx/add-constant chunk 3.4          ;- 常量 3.4
-        chunk-ctx/write chunk as bcode! OP_CONSTANT 123
-        chunk-ctx/write chunk as bcode! constant 123
+        chunk-ctx/write chunk OP_CONSTANT 123
+        chunk-ctx/write chunk constant 123
 
-        chunk-ctx/write chunk as bcode! OP_ADD 123          ;- 1.2 + 3.4 = 4.6
+        chunk-ctx/write chunk OP_ADD 123          ;- 1.2 + 3.4 = 4.6
 
         constant: chunk-ctx/add-constant chunk 5.6          ;- 常量 5.6
-        chunk-ctx/write chunk as bcode! OP_CONSTANT 123
-        chunk-ctx/write chunk as bcode! constant 123
+        chunk-ctx/write chunk OP_CONSTANT 123
+        chunk-ctx/write chunk constant 123
 
-        chunk-ctx/write chunk as bcode! OP_DIVEDE 123       ;- 1.2 + 3.4 / 5.6 = 0.821429
+        chunk-ctx/write chunk OP_DIVEDE 123       ;- 1.2 + 3.4 / 5.6 = 0.821429
 
         constant: chunk-ctx/add-constant chunk 0.7          ;- 常量 0.7
-        chunk-ctx/write chunk as bcode! OP_CONSTANT 123
-        chunk-ctx/write chunk as bcode! constant 123
+        chunk-ctx/write chunk OP_CONSTANT 123
+        chunk-ctx/write chunk constant 123
 
-        chunk-ctx/write chunk as bcode! OP_SUBTRACT 123     ;- 0.821429 - 0.7 = 0.121429
+        chunk-ctx/write chunk OP_SUBTRACT 123     ;- 0.821429 - 0.7 = 0.121429
 
         constant: chunk-ctx/add-constant chunk -1.0         ;- 常量 -1
-        chunk-ctx/write chunk as bcode! OP_CONSTANT 123
-        chunk-ctx/write chunk as bcode! constant 123
+        chunk-ctx/write chunk OP_CONSTANT 123
+        chunk-ctx/write chunk constant 123
 
-        chunk-ctx/write chunk as bcode! OP_MULTIPLY 123     ;- 0.121429 * -1 = -0.121429
+        chunk-ctx/write chunk OP_MULTIPLY 123     ;- 0.121429 * -1 = -0.121429
 
-        chunk-ctx/write chunk as bcode! OP_NEGATE 123       ;- 0.121429
-        chunk-ctx/write chunk as bcode! OP_RETURN 124
+        chunk-ctx/write chunk OP_NEGATE 123       ;- 0.121429
+        chunk-ctx/write chunk OP_RETURN 124
 
         disassemble-chunk chunk "test chunk"
 
@@ -122,15 +122,37 @@ rslox: context [
             sprintf [buffer "%.*s" fsize buffer]    ;- Windows 下文件末尾会变多，重新截取一下
         ]
 
-        return as-c-string buffer
+        as-c-string buffer
     ]
 
     interpret: func [
         source [c-string!]
         return: [InterpretResult!]
+        /local
+            chunk [chunk!]
+            result [InterpretResult!]
     ][
-        compiler/compile source
-        return INTERPRET_OK
+        chunk: declare chunk!
+        chunk-ctx/init chunk
+
+        unless compiler/compile source chunk [
+            chunk-ctx/free chunk
+            return INTERPRET_COMPILE_ERROR
+        ]
+
+        vm/chunk: chunk
+        vm/ip: vm/chunk/code
+        
+        result: run
+
+        chunk-ctx/free chunk
+        result
+    ]
+
+    run: func [
+        return: [InterpretResult!]
+    ][
+        0
     ]
 
     run-file: func [
@@ -139,7 +161,7 @@ rslox: context [
             result [InterpretResult!]
             source [c-string!]
     ][
-        print ["file: " path lf]
+        print [lf " run file: " path lf]
 
         source: read-file path
 

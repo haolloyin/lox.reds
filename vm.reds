@@ -17,7 +17,7 @@ Red/System []
 
 VM!: alias struct! [
     chunk [chunk!]
-    ip [bcode-ptr!]  ;- 初始化会指向 chunk/code，字节码指针
+    ip [int-ptr!]  ;- 初始化会指向 chunk/code，字节码指针
     stack [pointer! [value!]]       ;- 固定个数的数组
     stack-top [pointer! [value!]]   ;- 指向栈顶
 ]
@@ -71,9 +71,9 @@ vm-ctx: context [
     ]
 
     read-byte: func [
-        return: [bcode!]
+        return: [integer!]
         /local
-            byte [bcode!]
+            byte [integer!]
     ][
         byte: vm/ip/value
         vm/ip: vm/ip + 1    ;- 指向下一个元素
@@ -85,14 +85,14 @@ vm-ctx: context [
         /local
             index [integer!]
     ][
-        index: as integer! read-byte
+        index: read-byte
         vm/chunk/constants/values/index
     ]
 
     run: func [
         return: [InterpretResult!]
         /local
-            instruction [bcode!]
+            instruction [integer!]
             constant [value!]
             slot [pointer! [value!]]
             a [value!]
@@ -110,10 +110,10 @@ vm-ctx: context [
             print-line ""
 
             ;disassemble-instruction vm/chunk as integer! (vm/ip - vm/chunk/code)
-            ;disassemble-instruction vm/chunk (as integer! (vm/ip - vm/chunk/code)) / (size? bcode!)    ;- 除以元素大小
+            ;disassemble-instruction vm/chunk (as integer! (vm/ip - vm/chunk/code)) / (size? integer!)    ;- 除以元素大小
 
             instruction: read-byte
-            switch as integer! instruction [    ;- 必须是 integer!
+            switch instruction [    ;- 必须是 integer!
                 OP_CONSTANT [
                     constant: read-constant     ;- 常量下标需要再读取一位
                     push constant
@@ -133,7 +133,7 @@ vm-ctx: context [
                     BINARY_OP(/)
                 ]
                 OP_NEGATE [
-                    push as value! (0.0 - pop)
+                    push (0.0 - pop)
                 ]
                 OP_RETURN [
                     value-ctx/print pop
