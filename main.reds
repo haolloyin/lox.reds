@@ -136,6 +136,7 @@ rslox: context [
         chunk-ctx/init chunk
 
         unless compiler/compile source chunk [
+            ;- 编译失败，释放内存
             chunk-ctx/free chunk
             return INTERPRET_COMPILE_ERROR
         ]

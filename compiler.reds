@@ -25,17 +25,18 @@ ParseRule!: alias struct! [
 ]
 
 compiler: context [
-
     parser: declare struct! [
         curr [token!]
         prev [token!]
         had-error [logic!]
         panic-mode [logic!]
     ]
-    
-    rules: as int-ptr! 0
-
-    compiling-chunk: declare chunk!
+    rules: as int-ptr! 0                ;- 保存函数指针与优先级
+    compiling-chunk: declare chunk!     ;- 保存字节码
+    init-parsser: does [
+        parser/curr: declare token!
+        parser/prev: declare token!
+    ]
 
     compile: func [
         source  [c-string!]
@@ -48,6 +49,7 @@ compiler: context [
             c [byte-ptr!]
     ][
         scanner-ctx/init source
+        init-parsser
         init-rules
 
         parser/had-error: false
@@ -76,7 +78,10 @@ compiler: context [
 
     comp-expression: func [
     ][
-        print-line "comp-expression"
+        printf ["comp-expression prev: %.*s, curr: %.*s"
+            parser/prev/length parser/prev/start
+            parser/curr/length parser/curr/start]
+        print lf
 
         parse-precedence PREC_ASSIGNMENT
     ]
@@ -93,18 +98,18 @@ compiler: context [
         if parser/panic-mode [return 0]
         parser/panic-mode: true
 
-        fprintf [stderr "[line %d] Error" token/line]
+        fprintf [new-stderr "[line %d] Error" token/line]
 
         switch token/type [
-            TOKEN_EOF [fprintf [stderr " at end"]]
+            TOKEN_EOF [fprintf [new-stderr " at end"]]
             TOKEN_ERROR [
                 ;- TODO
             ]
             default [
-                fprintf [stderr " at '%.*s'" token/length token/start]
+                fprintf [new-stderr " at '%.*s'" token/length token/start]
             ]
         ]
-        fprintf [stderr ": %s" message]
+        fprintf [new-stderr ": %s" message]
         print lf
 
         parser/had-error: true
@@ -134,6 +139,10 @@ compiler: context [
 
     end-compiler: does [
         emit-return
+
+        if not parser/had-error [
+            disassemble-chunk get-current-chunk "code"
+        ]
     ]
 
     emit-return: does [
@@ -205,29 +214,43 @@ compiler: context [
 
     parse-precedence: func [
         precedence [Precedence!]
+        return: [integer!]
         /local
-            prefix-rule [ParseFn!]
             rule [ParseRule!]
-            fn [ParseFn!]
+            fn
     ][
         advance
 
         rule: get-rule parser/prev/type
-        prefix-rule: rule/prefix
+        fn: as function! [] rule/prefix
 
-        either null? prefix-rule [
+        printf ["parse-precedence rule: %d, fn: %d" rule :fn]
+        print lf
+
+        if (as-integer :fn) = 0 [
+            print-line "fn is 0"
             error "Expect expression."
-            return
+            return 0
+        ]
+        fn          ;- 执行 prefix 函数
+
+        rule: get-rule parser/curr/type
+        while [precedence < rule/precedence][
+            advance
+            fn: as function! [] rule/infix
+            fn      ;- 执行 infix 函数
         ]
 
-        as function! prefix-rule
+        return 0
     ]
 
     get-rule: func [
         op-type [token-type!]
         return: [ParseRule!]
+        /local rule
     ][
-        as ParseRule! rules/op-type
+        rule: rules + op-type
+        as ParseRule! rule/value
     ]
 
     init-rules: func [
@@ -291,9 +314,9 @@ compiler: context [
 		
 		until [
             rule: declare ParseRule!
-            rule/prefix:        as int-ptr! list/1
-            rule/infix:         as int-ptr! list/2
-            rule/precedence:    list/3
+            rule/prefix:    list/1
+            rule/infix:     list/2
+            rule/precedence: list/3
         
             rules/index: as integer! rule
 

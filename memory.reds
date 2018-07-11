@@ -59,7 +59,7 @@ memory-ctx: context [
             previous
             size * old-count
             size * count
-        print-line ["  ;-- grow-array:" previous ", size:" size ", old:" old-count ", count:" count ", at:" ptr]
+        ;print-line ["  ;-- grow-array:" previous ", size:" size ", old:" old-count ", count:" count ", at:" ptr]
         ptr
     ]
 
@@ -68,7 +68,7 @@ memory-ctx: context [
         size [integer!]
         old-count [integer!]
     ][
-        print-line ["  ;-- free:" pointer]
+        ;print-line ["  ;-- free:" pointer]
         reallocate pointer size * old-count 0
     ]
 ]

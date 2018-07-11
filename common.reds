@@ -66,11 +66,14 @@ Red/System []
     ]
 ]
 
+print-line ["--------- common -----------"]
 new-stdin: fdopen 0 as byte-ptr! "r"
+new-stderr: fdopen 2 as byte-ptr! "w"
 print-line ["stdin: " stdin]
 print-line ["stdout: " stdout]
 print-line ["stderr: " stderr]
 print-line ["new-stdin: " new-stdin]
+print-line ["new-stderr: " new-stderr]
 
 #define SEEK_SET    0   ;/* set file offset to offset */
 #define SEEK_CUR    1   ;/* set file offset to current plus offset */
@@ -78,5 +81,5 @@ print-line ["new-stdin: " new-stdin]
 
 MAX_INT: (1 << (8 * (size? integer!) - 1)) - 1
 print-line ["MAX_INT: " MAX_INT]
-print-line ["--------------------"]
+print-line ["--------- end -----------" lf]
 
