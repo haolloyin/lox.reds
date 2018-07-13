@@ -54,7 +54,7 @@ chunk-ctx: context [
                 chunk/capacity
         ]
 
-        chunk/count: chunk/count + 1    ;- 消耗空间 +1
+        ++(chunk/count 1)
         index: chunk/count              ;- R/S 的指针是基于 /1 来指向的
         chunk/code/index: byte          ;- 写入字节码 byte
         chunk/lines/index: line

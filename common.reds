@@ -79,7 +79,11 @@ print-line ["new-stderr: " new-stderr]
 #define SEEK_CUR    1   ;/* set file offset to current plus offset */
 #define SEEK_END    2   ;/* set file offset to EOF plus offset */
 
+#define ++(var i)     [var: var + i]        ; 类似 i++ 操作符
+#define --(var i)     [var: var - i]        ; 类似 i-- 操作符
+
 MAX_INT: (1 << (8 * (size? integer!) - 1)) - 1
 print-line ["MAX_INT: " MAX_INT]
 print-line ["--------- end -----------" lf]
+
 

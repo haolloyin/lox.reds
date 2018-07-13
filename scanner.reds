@@ -127,7 +127,7 @@ scanner-ctx: context [
                     break
                 ]
                 #"^(line)"[
-                    scanner/line: scanner/line + 1
+                    ++(scanner/line 1)
                     advance
                     break
                 ]
@@ -153,7 +153,7 @@ scanner-ctx: context [
             c [byte!]
     ][
         c: scanner/current/value
-        scanner/current: scanner/current + 1
+        ++(scanner/current 1)
         c
     ]
 
@@ -180,7 +180,7 @@ scanner-ctx: context [
         if at-end? [return false]
         unless scanner/current/value = expected [return false]
 
-        scanner/current: scanner/current + 1
+        ++(scanner/current 1)
         true
     ]
 
@@ -258,7 +258,7 @@ scanner-ctx: context [
             c2: scanner/start + start + i
 
             if c/value <> c2/value [return TOKEN_IDENTIFIER]
-            i: i + 1
+            ++(i 1)
             i < length
         ]
         return type
@@ -269,7 +269,7 @@ scanner-ctx: context [
     ][
         while [all [peek <> #"^"" not at-end?]][
             if peek = cr [
-                scanner/line: scanner/line + 1
+                ++(scanner/line 1)
             ]
             advance
         ]

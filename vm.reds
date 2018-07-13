@@ -50,13 +50,13 @@ vm-ctx: context [
         value [value!]
     ][
         vm/stack-top/value: value
-        vm/stack-top: vm/stack-top + 1
+        ++(vm/stack-top 1)
     ]
 
     pop: func [
         return: [value!]
     ][
-        vm/stack-top: vm/stack-top - 1
+        ++(vm/stack-top -1)
         vm/stack-top/value
     ]
 
@@ -76,7 +76,7 @@ vm-ctx: context [
             byte [integer!]
     ][
         byte: vm/ip/value
-        vm/ip: vm/ip + 1    ;- 指向下一个元素
+        ++(vm/ip 1)
         byte
     ]
 
@@ -105,7 +105,7 @@ vm-ctx: context [
                 printf ["["]
                 value-ctx/print slot/value
                 printf ["] "]
-                slot: slot + 1
+                ++(slot 1)
             ]
             print-line ""
 

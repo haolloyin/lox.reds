@@ -33,7 +33,7 @@ value-ctx: context [
                 array/capacity
         ]
 
-        array/count: array/count + 1
+        ++(array/count 1)
         index: array/count
         array/values/index: value
     ]

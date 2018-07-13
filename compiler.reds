@@ -320,9 +320,9 @@ compiler: context [
         
             rules/index: as integer! rule
 
-			list: list + 3
-			count: count - 3
-            index: index + 1
+            ++(list 3)
+            ++(count -3)
+            ++(index 1)
 			zero? count
 		]
 	]
